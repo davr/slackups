@@ -51,6 +51,7 @@ class Server(object):
             for client in self.clients.values():
                 if message in client.sent_messages and sender == client.nickname:
                     client.sent_messages.remove(message)
+                    client.privmsg(hostmask, channel, conv_event.text)
                 else:
                     client.privmsg(hostmask, channel, conv_event.text)
 
