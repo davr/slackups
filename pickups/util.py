@@ -26,8 +26,16 @@ def channel_to_conversation(channel, conv_list):
 def get_nick(user):
     """Return nickname for a hangups.User."""
     # Remove disallowed characters and limit to max length 15
-    return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', user.full_name)[:15]
+    name = user.first_name
+    if name == None or name == "Unknown" or name == "" or name == "None":
+        name = user.full_name.split()[0]
+    name = name.split("@")[0]
+    return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', name)[:15]
 
+def get_name(user):
+    """Return nickname for a hangups.User."""
+    # Remove disallowed characters and limit to max length 15
+    return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', user.full_name)[:15]
 
 def get_hostmask(user):
     """Return hostmask for a hangups.User."""

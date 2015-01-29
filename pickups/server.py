@@ -120,7 +120,7 @@ class Server(object):
                                                          self._conv_list)
                     responses = [{
                         'channel': query,
-                        'user': util.get_nick(user),
+                        'user': util.get_name(user),
                         'nick': util.get_nick(user),
                         'real_name': user.full_name,
                     } for user in conv.users]
