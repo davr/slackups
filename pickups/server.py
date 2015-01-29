@@ -127,6 +127,8 @@ class Server(object):
                     client.who(query, responses)
             elif line.startswith('PING'):
                 client.pong()
+            elif line.startswith('QUIT'):
+                client.close()
 
             if not welcomed and client.nickname and username:
                 welcomed = True

@@ -30,6 +30,9 @@ class Client(object):
     def readline(self):
         return self.reader.readline()
 
+    def close(self):
+        self.writer.close()
+
     def write(self, sender, command, *args):
         """Sends a message to the client on behalf of another client."""
         if not isinstance(command, str):
