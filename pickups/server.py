@@ -48,6 +48,10 @@ class Server(object):
             hostmask = util.get_hostmask(user)
             channel = util.conversation_to_channel(conv)
             message = conv_event.text
+            print(hostmask+' -> '+channel+' : '+conv_event.text)
+            if len(conv.users) < 3:
+                return
+
             for client in self.clients.values():
                 if message in client.sent_messages and sender == client.nickname:
                     client.sent_messages.remove(message)
