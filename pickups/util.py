@@ -12,7 +12,7 @@ def conversation_to_channel(conv):
     # Must be 50 characters max and not contain space or comma.
     conv_hash = hashlib.sha1(conv.id_.encode()).hexdigest()
     name = get_conv_name(conv).replace(',', '_').replace(' ', '')
-    return '#{}[{}]'.format(name[:50 - CONV_HASH_LEN - 3],
+    return '#{}[{}]'.format('chat',
                             conv_hash[:CONV_HASH_LEN])
 
 
@@ -25,10 +25,12 @@ def channel_to_conversation(channel, conv_list):
 
 def get_nick(user):
     """Return nickname for a hangups.User."""
+    return get_name(user)
     # Remove disallowed characters and limit to max length 15
-    name = user.first_name
-    if name == None or name == "Unknown" or name == "" or name == "None":
-        name = user.full_name.split()[0]
+    fname = user.full_name.split()
+    name = fname[0]
+    if len(fname) > 1:
+    	name += fname[1][:1]
     name = name.split("@")[0]
     return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', name)[:15]
 
