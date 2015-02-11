@@ -52,9 +52,14 @@ class Server(object):
             if len(conv.users) < 3:
                 return
 
+
             for client in self.clients.values():
+                if not channel in client.channels:
+                    client.join(channel)
                 if message in client.sent_messages and sender == client.nickname:
                     client.sent_messages.remove(message)
+#                    client.privmsg(hostmask, channel, conv_event.text)
+                elif sender == client.nickname:
                     client.privmsg(hostmask, channel, conv_event.text)
                 else:
                     client.privmsg(hostmask, channel, conv_event.text)
@@ -128,6 +133,12 @@ class Server(object):
 
             elif line.startswith('WHO'):
                 query = line.split(' ')[1]
+                try:
+                    channel
+                except NameError:
+                    print("Undef channel?")
+                    continue
+
                 if query.startswith('#'):
                     conv = util.channel_to_conversation(channel,
                                                          self._conv_list)
