@@ -115,11 +115,17 @@ class Server(object):
                     # confirmation and is then sent the channel's topic (using
                     # RPL_TOPIC) and the list of users who are on the channel (using
                     # RPL_NAMREPLY), which MUST include the user joining.
-                    client.write(util.get_nick(self._user_list._self_user),
-                                 'JOIN', channel)
+                    client.join(channel)
                     client.topic(channel, util.get_topic(conv))
                     client.list_nicks(channel,
                                       (util.get_nick(user) for user in conv.users))
+            elif line.startswith('PART'):
+                channels = line.split(' ')[1]
+                channels = channels.split(',')
+                for channel in channels:
+                    conv = util.channel_to_conversation(channel, self._conv_list)
+                    client.part(channel)
+
             elif line.startswith('WHO'):
                 query = line.split(' ')[1]
                 if query.startswith('#'):

@@ -26,6 +26,7 @@ class Client(object):
 
         self.nickname = None
         self.sent_messages = []
+        self.channels = {}
 
     def readline(self):
         return self.reader.readline()
@@ -65,7 +66,14 @@ class Client(object):
 
     def join(self, channel):
         """Tells the client to join a channel."""
+        self.channels[channel] = True
         self.write(self.nickname, 'JOIN', ':{}'.format(channel))
+
+    def part(self, channel):
+        """Tells the client to join a channel."""
+        if channel in self.channels:
+            del self.channels[channel]
+        self.write(self.nickname, 'PART', ':{}'.format(channel))
 
     def list_nicks(self, channel, nicks):
         """Tells the client what nicks are in channel."""
