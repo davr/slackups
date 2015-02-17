@@ -8,7 +8,7 @@ This is currently just a prototype.
 
 ## Usage
 
-`$ python -m pickups`
+`$ python3 run.py`
 
 You will be prompted for your Google credentials and only the resulting cookies
 from authentication will be saved. Then connect your IRC client to `localhost`
