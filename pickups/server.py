@@ -36,6 +36,10 @@ class Server(object):
             self._hangups, initial_data.conversation_states, self._user_list,
             initial_data.sync_timestamp
         )
+
+        for conv in self._conv_list.get_all():
+            util.conversation_to_channel(conv)
+
         self._conv_list.on_event.add_observer(self._on_hangups_event)
         logger.info('Hangups connected. Connect your IRC clients!')
 

@@ -7,6 +7,7 @@ import string
 
 CONV_HASH_LEN = 7
 
+hashes = {}
 
 def conversation_to_channel(conv):
     """Return channel name for hangups.Conversation."""
@@ -20,14 +21,17 @@ def conversation_to_channel(conv):
     # only keep alpha nums
     name = re.sub(r'[^0-9a-zA-Z_]+', '', name)
 
-    return '#{}[{}]'.format(name,
-                            conv_hash[:CONV_HASH_LEN])
+    name = "#{}".format(name[:49])
+
+    hashes[name] = conv_hash
+
+    return name
 
 
 def channel_to_conversation(channel, conv_list):
     """Return hangups.Conversation for channel name."""
-    conv_hash = re.match(r'^.*\[([a-f0-9]+)\]$', channel).group(1)
-    return {hashlib.sha1(conv.id_.encode()).hexdigest()[:CONV_HASH_LEN]: conv
+    conv_hash = hashes[channel]
+    return {hashlib.sha1(conv.id_.encode()).hexdigest(): conv
             for conv in conv_list.get_all()}[conv_hash]
 
 
