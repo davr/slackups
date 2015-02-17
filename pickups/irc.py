@@ -39,6 +39,7 @@ import operator
 import string, socket
 import textwrap
 import shlex
+import logging
 from os import path
 
 #from twisted.internet import reactor, protocol, task
@@ -46,11 +47,13 @@ from os import path
 #from twisted.protocols import basic
 #from twisted.python import log, reflect, _textattributes
 
+logger = logging.getLogger(__name__)
+                
 NUL = chr(0)
-CR = chr(015)
-NL = chr(012)
+CR = chr(13)
+NL = chr(10)
 LF = NL
-SPC = chr(040)
+SPC = chr(32)
 
 # This includes the CRLF terminator characters.
 MAX_COMMAND_LENGTH = 512
@@ -249,21 +252,25 @@ class IRC:
     """
 
     buffer = ""
-    hostname = None
+    hostname = 'pickups.davr.org'
 
-    encoding = None
+    encoding = 'utf-8'
+
+    def __init__(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
+        self.nickname = False
+        self.username = False
+
 
     def connectionMade(self):
-        self.channels = []
         if self.hostname is None:
             self.hostname = socket.getfqdn()
 
-
     def sendLine(self, line):
-        if self.encoding is not None:
-            if isinstance(line, unicode):
-                line = line.encode(self.encoding)
-        self.transport.write("%s%s%s" % (line, CR, LF))
+        print("Sending: '%s'"%line)
+        line = (line+CR+LF).encode(self.encoding)
+        self.writer.write(line)
 
 
     def sendMessage(self, command, *parameter_list, **prefix):
@@ -292,6 +299,8 @@ class IRC:
             logger.info("Message has %d parameters (RFC allows 15):\n%s" %
                     (len(parameter_list), line))
 
+    def swrite(self, command, *parameter_list):
+        self.sendMessage(command, self.nickname, *parameter_list, prefix=self.hostname)
 
     def dataReceived(self, data):
         """
@@ -299,24 +308,23 @@ class IRC:
         says CRLF.  (Also, the flexibility of LineReceiver to turn "line mode"
         on and off was not required.)
         """
-        lines = (self.buffer + data).split(LF)
-        # Put the (possibly empty) element after the last LF back in the
-        # buffer
-        self.buffer = lines.pop()
 
-        for line in lines:
-            if len(line) <= 2:
-                # This is a blank line, at best.
-                continue
-            if line[-1] == CR:
-                line = line[:-1]
-            prefix, command, params = parsemsg(line)
-            # mIRC is a big pile of doo-doo
-            command = command.upper()
-            # DEBUG: logger.info( "%s %s %s" % (prefix, command, params))
+        line = data
 
-            self.handleCommand(command, prefix, params)
+        if len(line) <= 2:
+            # This is a blank line, at best.
+            return
+        if line[-1] == CR:
+            line = line[:-1]
+        prefix, command, params = parsemsg(line)
+        # mIRC is a big pile of doo-doo
+        command = command.upper()
+        # DEBUG: logger.info( "%s %s %s" % (prefix, command, params))
 
+        self.handleCommand(command, prefix, params)
+
+    def readline(self):
+        return self.reader.readline()
 
     def handleCommand(self, command, prefix, params):
         """
@@ -340,7 +348,8 @@ class IRC:
             else:
                 self.irc_unknown(prefix, command, params)
         except:
-            logger.error("ERR2?")
+            logger.error("Error raised handling IRC command %s",command)
+            traceback.print_exc()
 
 
     def irc_unknown(self, prefix, command, params):
@@ -348,7 +357,8 @@ class IRC:
         Called by L{handleCommand} on a command that doesn't have a defined
         handler. Subclasses should override this method.
         """
-        raise NotImplementedError(command, prefix, params)
+        logger.error("Unknown command: %s - %s - %s",prefix,command,params)
+        #raise NotImplementedError(command, prefix, params)
 
 
     # Helper methods
@@ -500,6 +510,12 @@ class IRC:
         self.sendLine(":%s %s %s %s :End of /NAMES list" % (
             self.hostname, RPL_ENDOFNAMES, user, channel))
 
+    def list_channels(self, info):
+        self.swrite(RPL_LISTSTART)
+        for channel, num_users, topic in info:
+            self.swrite(RPL_LIST, channel, str(num_users), ':{}'.format(topic))
+        self.swrite(RPL_LISTEND, ':End of /LIST')
+
 
     def who(self, user, channel, memberInfo):
         """
@@ -584,6 +600,9 @@ class IRC:
             self.hostname, RPL_ENDOFWHOIS, user, nick))
 
 
+    def pong(self, params):
+        self.swrite('PONG', params[-1])
+
     def join(self, who, where):
         """
         Send a join message.
@@ -597,6 +616,8 @@ class IRC:
         """
         self.sendLine(":%s JOIN %s" % (who, where))
 
+    def nick(self, oldnick, newnick):
+        self.sendLine(":%s NICK %s" % (oldnick, newnick))
 
     def part(self, who, where, reason=None):
         """
@@ -618,6 +639,8 @@ class IRC:
         else:
             self.sendLine(":%s PART %s" % (who, where))
 
+    def userMode(self, user, modestr):
+        self.sendLine(":%s MODE %s %s" % (self.hostname, user, modestr))
 
     def channelMode(self, user, channel, mode, *args):
         """
@@ -995,8 +1018,7 @@ def dccParseAddress(address):
         try:
             address = long(address)
         except ValueError:
-            raise IRCBadMessage,\
-                  "Indecipherable address %r" % (address,)
+            raise IRCBadMessage("Indecipherable address %r" % (address,))
         else:
             address = (
                 (address >> 24) & 0xFF,
@@ -1478,7 +1500,7 @@ class DccFileReceive:
 
 # CTCP constants and helper functions
 
-X_DELIM = chr(001)
+X_DELIM = chr(1)
 
 def ctcpExtract(message):
     """
@@ -1522,7 +1544,7 @@ def ctcpExtract(message):
 
 # CTCP escaping
 
-M_QUOTE= chr(020)
+M_QUOTE= chr(16)
 
 mQuoteTable = {
     NUL: M_QUOTE + '0',

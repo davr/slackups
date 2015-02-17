@@ -3,6 +3,7 @@
 from hangups.ui.utils import get_conv_name
 import hashlib
 import re
+import string
 
 CONV_HASH_LEN = 7
 
@@ -11,8 +12,15 @@ def conversation_to_channel(conv):
     """Return channel name for hangups.Conversation."""
     # Must be 50 characters max and not contain space or comma.
     conv_hash = hashlib.sha1(conv.id_.encode()).hexdigest()
+
+    # comma to underscore
+    # space to nospace
     name = get_conv_name(conv).replace(',', '_').replace(' ', '')
-    return '#{}[{}]'.format('chat',
+
+    # only keep alpha nums
+    name = re.sub(r'[^0-9a-zA-Z_]+', '', name)
+
+    return '#{}[{}]'.format(name,
                             conv_hash[:CONV_HASH_LEN])
 
 
