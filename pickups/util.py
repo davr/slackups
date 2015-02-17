@@ -23,14 +23,14 @@ def conversation_to_channel(conv):
 
     name = "#{}".format(name[:49])
 
-    hashes[name] = conv_hash
+    hashes[name.lower()] = conv_hash
 
     return name
 
 
 def channel_to_conversation(channel, conv_list):
     """Return hangups.Conversation for channel name."""
-    conv_hash = hashes[channel]
+    conv_hash = hashes[channel.lower()]
     return {hashlib.sha1(conv.id_.encode()).hexdigest(): conv
             for conv in conv_list.get_all()}[conv_hash]
 
