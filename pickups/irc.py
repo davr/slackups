@@ -377,7 +377,9 @@ class IRC:
         @type message: C{str} or C{unicode}
         @param message: The message being sent.
         """
-        self.sendLine(":%s PRIVMSG %s :%s" % (sender, recip, lowQuote(message)))
+        messages = message.replace("\r\n","\n").split("\n")
+        for message in messages:
+            self.sendLine(":%s PRIVMSG %s :%s" % (sender, recip, lowQuote(message)))
 
 
     def notice(self, sender, recip, message):
