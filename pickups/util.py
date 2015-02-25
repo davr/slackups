@@ -23,6 +23,13 @@ def conversation_to_channel(conv):
 
     name = "#{}".format(name[:49])
 
+    if name in hashes and hashes[name] != conv_hash:
+        while name in hashes:
+            if len(name) > 50:
+                name = "{}_".format(name[:-1])
+            else:
+                name = "{}_".format(name)
+
     hashes[name.lower()] = conv_hash
 
     return name
