@@ -9,12 +9,13 @@ from . import irc, util, ircgateway
 logger = logging.getLogger(__name__)
 
 
-class Server(object):
+class Server:
 
-    def __init__(self, host='localhost', port='6667', cookies=None):
+    def __init__(self, cookies=None, ascii_smileys=False):
         self.clients = {}
         self._hangups = hangups.Client(cookies)
         self._hangups.on_connect.add_observer(self._on_hangups_connect)
+        self.ascii_smileys = True #ascii_smileys
 
     def run(self, host, port):
         loop = asyncio.get_event_loop()
@@ -61,10 +62,12 @@ class Server(object):
                 if message in client.sent_messages and sender == client.nickname:
                     client.sent_messages.remove(message)
 #                    client.privmsg(hostmask, channel, conv_event.text)
-                elif sender == client.nickname:
-                    client.privmsg(hostmask, channel, conv_event.text)
+#                elif sender == client.nickname:
+#                    client.privmsg(hostmask, channel, message)
                 else:
-                    client.privmsg(hostmask, channel, conv_event.text)
+                    if self.ascii_smileys:
+                        message = util.smileys_to_ascii(message)
+                    client.privmsg(hostmask, channel, message)
 
     # Client Callbacks
 
