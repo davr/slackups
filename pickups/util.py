@@ -4,6 +4,7 @@ from hangups.ui.utils import get_conv_name
 import hashlib
 import re
 import string
+import unicodedata
 
 CONV_HASH_LEN = 7
 
@@ -112,6 +113,12 @@ def smileys_to_ascii(s):
             res.append(SMILEYS[c])
             if i < len(s) - 1 and s[i + 1] in SMILEYS: # separate smileys
                 res.append(' ')
+        elif ord(c) >= 0x2702 and ord(c) <= 0x1f6ff:
+            try:
+                name = unicodedata.name(c)
+                res.append((':'+name+':').lower())
+            except:
+                res.append(c)
         else:
             res.append(c)
     return ''.join(res)
