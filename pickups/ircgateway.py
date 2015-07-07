@@ -42,6 +42,7 @@ class IRCGateway(irc.IRC):
     def irc_PRIVMSG(self, prefix, params):
         channel = params[0]
         message = ' '.join(params[1:])
+        message = util.ascii_to_smileys(message)
         conv = util.channel_to_conversation(channel, self._conv_list)
         self.sent_messages.append(message)
         segments = hangups.ChatMessageSegment.from_str(message)
