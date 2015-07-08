@@ -150,8 +150,8 @@ def smileys_to_ascii(s):
                 res.append(' ')
         elif ord(c) >= 0x2702 and ord(c) <= 0x1f6ff:
             try:
-                name = unicodedata.name(c)
-                res.append((':'+name+':').lower())
+                name = ':'+unicodedata.name(c).lower().replace(' ','-')+':'
+                res.append(name)
             except:
                 res.append(c)
         else:
@@ -164,6 +164,12 @@ def ascii_to_smileys(s):
     for word in words:
         if word in ASCIIS:
             res.append(ASCIIS[word])
+        elif word[0]==':' and word[-1]==':':
+            try:
+                emoji = unicodedata.lookup(word[1:-1].upper().replace('-',' '))
+                res.append(emoji)
+            except:
+                res.append(word)
         else:
             res.append(word)
     return ' '.join(res)
