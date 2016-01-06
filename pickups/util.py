@@ -96,7 +96,7 @@ SMILEYS = {chr(k): v for k, v in {
         0x1f618: ';*',
         0x1f61B: ':P',
         0x1f61C: ';P',
-        0x1f61E: ':(',
+        0x1f61E: ':\'(',
         0x1f621: '>:(',
         0x1f622: ';_;',
         0x1f623: '>_<',
@@ -108,7 +108,7 @@ SMILEYS = {chr(k): v for k, v in {
         0x1f620: '>:(',
         0x1f62c: '>:(',
         0x1f62a: '(-_-)zzz',
-        0x1f634: '(-_-)zzz',
+        0x1f634: '(-_-).zZ',
         0x1f4a4: '.zZ',
         0x1f624: '>:(',
         0x1f625: 'D:',
@@ -129,6 +129,9 @@ SMILEYS = {chr(k): v for k, v in {
 }.items()}
 
 ASCIIS = {v: chr(k) for k, v in {
+        0x1f62a: '(-_-)zzz',
+        0x1f634: '(-_-).zZ',
+        0x1f4a4: '.zZ',
         0x1f631: 'O_O', 
         0x1f62d: ':''(', 
         0x1f64d: '>:|', 
@@ -155,7 +158,7 @@ ASCIIS = {v: chr(k) for k, v in {
         0x1f618: ';*',
         0x1f61B: ':P',
         0x1f61C: ';P',
-        0x1f61E: ':(',
+        0x1f622: ':(',
         0x1f621: '>:(',
         0x1f622: ';_;',
         0x1f622: ';(',
