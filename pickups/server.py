@@ -19,11 +19,15 @@ class Server:
 
     def run(self, host, port):
         loop = asyncio.get_event_loop()
+        logger.info('Starting IRC Server')
         loop.run_until_complete(
             asyncio.start_server(self._on_client_connect, host=host, port=port)
         )
         logger.info('Waiting for hangups to connect...')
-        loop.run_until_complete(self._hangups.connect())
+        try:
+            loop.run_until_complete(self._hangups.connect())
+        finally:
+            loop.close()
 
     # Hangups Callbacks
 
