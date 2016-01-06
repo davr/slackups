@@ -3,6 +3,7 @@ import asyncio
 import logging
 import hangups
 import hangups.auth
+import re
 
 class IRCGateway(irc.IRC):
 
@@ -42,7 +43,12 @@ class IRCGateway(irc.IRC):
     def irc_PRIVMSG(self, prefix, params):
         channel = params[0]
         message = ' '.join(params[1:])
+
+        print("from IRC #"+channel+": "+message)
+        message = re.sub('\x01','',message)
+        message = re.sub(r'^ACTION ', '/me ', message)
         message = util.ascii_to_smileys(message)
+        print("Converted: "+message)
         conv = util.channel_to_conversation(channel, self._conv_list)
         self.sent_messages.append(message)
         segments = hangups.ChatMessageSegment.from_str(message)

@@ -63,7 +63,10 @@ class Server:
                 else:
                     if self.ascii_smileys:
                         message = util.smileys_to_ascii(message)
-                    client.privmsg(hostmask, channel, message)
+                    if message[:4] == '/me ':
+                        client.action(hostmask, channel, message[4:])
+                    else:
+                        client.privmsg(hostmask, channel, message)
 
     # Client Callbacks
 
