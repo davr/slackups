@@ -27,16 +27,12 @@ class Server:
 
     # Hangups Callbacks
 
-    def _on_hangups_connect(self, initial_data):
+    def _on_hangups_connect(self):
         """Called when hangups successfully auths with hangouts."""
-        self._user_list = hangups.UserList(
-            self._hangups, initial_data.self_entity, initial_data.entities,
-            initial_data.conversation_participants
-        )
-        self._conv_list = hangups.ConversationList(
-            self._hangups, initial_data.conversation_states, self._user_list,
-            initial_data.sync_timestamp
-        )
+        logger.info('Hangups connected...')
+        self._user_list, self._conv_list = (
+            yield from hangups.build_user_conversation_list(self._client)
+            )
 
         for conv in self._conv_list.get_all():
             util.conversation_to_channel(conv)
