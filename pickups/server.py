@@ -31,18 +31,20 @@ class Server:
 
     # Hangups Callbacks
 
+    @asyncio.coroutine
     def _on_hangups_connect(self):
         """Called when hangups successfully auths with hangouts."""
         logger.info('Hangups connected...')
         self._user_list, self._conv_list = (
-            yield from hangups.build_user_conversation_list(self._client)
-            )
+            yield from hangups.build_user_conversation_list(self._hangups)
+        )
 
         for conv in self._conv_list.get_all():
             util.conversation_to_channel(conv)
 
         self._conv_list.on_event.add_observer(self._on_hangups_event)
         logger.info('Hangups connected. Connect your IRC clients!')
+
 
     def _on_hangups_event(self, conv_event):
         """Called when a hangups conversation event occurs."""
