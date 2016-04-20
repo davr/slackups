@@ -64,7 +64,12 @@ class IRCGateway(irc.IRC):
     def dojoin(self, channel):
         """Do a full join process on a channel (join msg, topic, names list)"""
         print("Joining '"+channel+"'")
-        conv = util.channel_to_conversation(channel, self._conv_list)
+        try:
+            conv = util.channel_to_conversation(channel, self._conv_list)
+        except:
+            self.swrite(irc.ERR_NOSUCHCHANNEL, ':No such channel "'+channel+'"')
+            return
+
         # If a JOIN is successful, the user receives a JOIN message as
         # confirmation and is then sent the channel's topic (using
         # irc.RPL_TOPIC) and the list of users who are on the channel (using
