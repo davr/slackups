@@ -55,7 +55,7 @@ class Server:
             hostmask = util.get_hostmask(user)
             channel = util.conversation_to_channel(conv)
             message = conv_event.text
-            print(hostmask+' -> '+channel+' : '+conv_event.text)
+            print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
 
 
             for client in self.clients.values():

@@ -268,7 +268,7 @@ class IRC:
             self.hostname = socket.getfqdn()
 
     def sendLine(self, line):
-        print("Sending: '%s'"%line)
+        print("Sending: '%s'"%line.encode('utf-8'))
         line = (line+CR+LF).encode(self.encoding)
         self.writer.write(line)
 
