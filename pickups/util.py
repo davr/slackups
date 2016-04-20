@@ -57,7 +57,17 @@ def get_nick(user):
 def get_name(user):
     """Return nickname for a hangups.User."""
     # Remove disallowed characters and limit to max length 15
-    return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', user.full_name)[:15]
+    name = user.full_name
+    if name == 'Unknown':
+        if user.first_name == 'Unknown' or user.firt_name == '':
+            name = user.emails[0]
+        else:
+            if user.last_name == 'Unknown' or user.last_name == '':
+                name = user.first_name
+            else:
+                name = user.first_name+user.last_name
+    
+    return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', name)[:15]
 
 def get_hostmask(user):
     """Return hostmask for a hangups.User."""
