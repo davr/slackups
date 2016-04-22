@@ -58,14 +58,17 @@ def get_name(user):
     """Return nickname for a hangups.User."""
     # Remove disallowed characters and limit to max length 15
     name = user.full_name
-    if name == 'Unknown':
-        if user.first_name == 'Unknown' or user.firt_name == '':
-            name = user.emails[0]
-        else:
-            if user.last_name == 'Unknown' or user.last_name == '':
-                name = user.first_name
+    try:
+        if name == 'Unknown':
+            if (user.first_name == 'Unknown' or user.firt_name == '') and len(user.emails) > 0:
+                name = user.emails[0]
             else:
-                name = user.first_name+user.last_name
+                if not hasattr(user,'last_name') or user.last_name == 'Unknown' or user.last_name == '':
+                    name = user.first_name
+                else:
+                    name = user.first_name+user.last_name
+    except:
+        pass
     
     return re.sub(r'[^\w\[\]\{\}\^`|_\\-]', '', name)[:15]
 
