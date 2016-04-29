@@ -192,7 +192,7 @@ def smileys_to_ascii(s):
             res.append(SMILEYS[c])
             if i < len(s) - 1 and s[i + 1] in SMILEYS: # separate smileys
                 res.append(' ')
-        elif ord(c) >= 0x2702 and ord(c) <= 0x1f6ff:
+        elif ord(c) > 128 and unicodedata.category(c)[0] == 'S':
             try:
                 name = ':'+unicodedata.name(c).lower().replace(' ','-')+':'
                 res.append(name)
