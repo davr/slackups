@@ -140,6 +140,18 @@ SMILEYS = {chr(k): v for k, v in {
         0x1f626: '>:O',
         0x1f61f: ':/',
         0x2639: ':(',
+        0x1f60b: ';P',
+        0x1f60d: '<3<3<3',
+        0x1f642: ':)',
+        0x1f917: ':hug:',
+        0x1f914: ':/ hmm',
+        0x1f644: '(e_e)',
+        0x1f62f: ':-o',
+        0x1f62b: "'>_<",
+        0x1f913: 'B-)',
+        0x1f641: ':(',
+        0x1f629: '>_<',
+
 }.items()}
 
 ASCIIS = {v: chr(k) for k, v in {
@@ -183,6 +195,8 @@ ASCIIS = {v: chr(k) for k, v in {
         0x1f632: ':O',
         0x1f635: 'x_x',
         0x1f638: ':3',
+        0x1f917: ':hug:',
+        0x1f644: '(e_e)',
 }.items()}
 
 def smileys_to_ascii(s):
