@@ -109,7 +109,7 @@ class Server:
                 break
 
             line = line.decode('utf-8','ignore').strip('\r\n')
-            logger.info('Received: %r', line)
+            logger.info('Received: %r', line.encode('utf-8'))
 
             client.dataReceived(line)
 
