@@ -44,11 +44,11 @@ class IRCGateway(irc.IRC):
         channel = params[0]
         message = ' '.join(params[1:])
 
-        print("from IRC #"+channel+": "+message)
+        print(("from IRC #"+channel+": "+message).encode('utf-8'))
         message = re.sub('\x01','',message)
         message = re.sub(r'^ACTION ', '/me ', message)
         message = util.ascii_to_smileys(message)
-        print("Converted: "+message)
+        print(("Converted: "+message).encode('utf-8'))
         conv = util.channel_to_conversation(channel, self._conv_list)
         self.sent_messages.append(message)
         segments = hangups.ChatMessageSegment.from_str(message)

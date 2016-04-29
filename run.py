@@ -17,7 +17,7 @@ def runit():
 
     parser = argparse.ArgumentParser(description='IRC Gateway for Hangouts')
     parser.add_argument('--address', help='bind address', default='127.0.0.1')
-    parser.add_argument('--port', help='bind port', default=6667)
+    parser.add_argument('--port', help='bind port', default=6667, type=int)
     parser.add_argument('--ascii-smileys', action='store_true',
                         help='display smileys in ascii')
     args = parser.parse_args()
