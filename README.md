@@ -1,6 +1,6 @@
 # pickups
 
-IRC gateway for Google Hangouts using
+Slack gateway for Google Hangouts using
 [hangups](https://github.com/tdryer/hangups).
 
 ## Usage
@@ -9,7 +9,8 @@ IRC gateway for Google Hangouts using
 
 You will be given a URL to your oauth2 token.  Go to the url.  Copy the token.
 You will be prompted for your oauth2 token.  Paste it in.
-Connect your IRC client to localhost on port 6667
+You will be prompted for your slack token, you can generate it from 
+[this url](https://api.slack.com/docs/oauth-test-tokens#test_token_generator)
 
 ### Run under python3 and virtualenv
 
@@ -22,10 +23,6 @@ pip install -r requirements.txt
 mkdir -p ${HOME}/.cache/hangups/
 
 python3 run.py
-
-### Run hangups on a different port
-
-python3 run.py --port=7667
 
 ### Run under virtualenv, run hangups with zdaemon, run server on port 7667
 
