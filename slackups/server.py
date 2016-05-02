@@ -3,6 +3,8 @@ import logging
 
 import hangups
 import hangups.auth
+from hangups.ui.utils import get_conv_name
+
 
 from . import util, slackgateway
 
@@ -50,17 +52,24 @@ class Server:
         task = asyncio.Task(self.slack.run())
 
 
+    @asyncio.coroutine
     def _on_hangups_event(self, conv_event):
         """Called when a hangups conversation event occurs."""
-        if isinstance(conv_event, hangups.ChatMessageEvent):
-            conv = self._conv_list.get(conv_event.conversation_id)
-            user = conv.get_user(conv_event.user_id)
-            sender = util.get_nick(user)
-            hostmask = util.get_hostmask(user)
-            channel = util.conversation_to_channel(conv)
-            message = conv_event.text
-            print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
-            self.slack.hangoutsMessage(channel, user, message)
+        try:
+            if isinstance(conv_event, hangups.ChatMessageEvent):
+                conv = self._conv_list.get(conv_event.conversation_id)
+                user = conv.get_user(conv_event.user_id)
+                sender = util.get_nick(user)
+                hostmask = util.get_hostmask(user)
+                channel = util.conversation_to_channel(conv)
+                message = conv_event.text
+                print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
+                yield from self.slack.hangoutsMessage(conv, user, message)
+            else:
+                logger.info("Hangups Event: "+conv_event.__class__.__name__)
+        except:
+            logger.warning("Error handling hangouts event!")
+
 
     # Client Callbacks
 
