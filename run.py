@@ -6,7 +6,7 @@ import sys
 import appdirs
 import hangups.auth
 
-from pickups.server import Server
+from slackups.server import Server
 
 def runit():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
