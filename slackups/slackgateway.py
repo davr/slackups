@@ -37,14 +37,28 @@ class SlackGateway:
         else:
             logger.critical("ERROR CONNCTING TO SLACK check token?")
 
+    def addGroup(self, group):
+        self.groups[group['id']] = group
+        purpose = group['purpose']['value']
+        if purpose[0:17] == 'Hangouts Bridge: ':
+            hangoutid = purpose[17:]
+            self.grouphash[hangoutid] = group['id']
+
     @asyncio.coroutine
     def run(self):
         logger.info("Starting slack event loop")
         yield from asyncio.sleep(0.1)
-        for channel in self.client.server.channels:
-            n = str(channel.name)
-            i = str(channel.id)
-            logger.info("Slack Channel: "+n+" ["+i+"]")
+        logger.info("Requesting slack groups")
+        res = self.client.api_call('groups.list', exclude_archived=1)
+        self.groups = dict()
+        self.grouphash = dict()
+        if 'ok' in res and res['ok']:
+            for group in res.groups:
+                addGroup(group)
+        else:
+            logger.critical("ERROR LISTING SLACK GROUPS check token?")
+            logger.critical(json.dumps(res).encode("utf-8"))
+
         yield from asyncio.sleep(0.1)
         while True:
             for event in self.client.rtm_read():
