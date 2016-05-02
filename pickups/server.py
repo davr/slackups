@@ -4,7 +4,7 @@ import logging
 import hangups
 import hangups.auth
 
-from . import irc, util, ircgateway
+from . import util, slackgateway
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +18,17 @@ class Server:
         self.ascii_smileys = True #ascii_smileys
 
     def run(self, host, port):
-        loop = asyncio.get_event_loop()
-        logger.info('Starting IRC Server')
-        loop.run_until_complete(
-            asyncio.start_server(self._on_client_connect, host=host, port=port)
-        )
+        self.loop = loop = asyncio.get_event_loop()
+
+        logger.info('Connecting to slack')
+        self.slack = slackgateway.SlackGateway()
+        self.slack.connect()
+
         logger.info('Waiting for hangups to connect...')
         try:
             loop.run_until_complete(self._hangups.connect())
         finally:
+            logger.info("Goodbye")
             loop.close()
 
     # Hangups Callbacks
@@ -43,7 +45,9 @@ class Server:
             util.conversation_to_channel(conv)
 
         self._conv_list.on_event.add_observer(self._on_hangups_event)
-        logger.info('Hangups connected. Connect your IRC clients!')
+        logger.info('Hangups connected.')
+
+        task = asyncio.Task(self.slack.run())
 
 
     def _on_hangups_event(self, conv_event):
@@ -56,23 +60,7 @@ class Server:
             channel = util.conversation_to_channel(conv)
             message = conv_event.text
             print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
-
-
-            for client in self.clients.values():
-                if not channel in client.channels:
-                    client.dojoin(channel)
-                if message in client.sent_messages and sender == client.nickname:
-                    client.sent_messages.remove(message)
-#                    client.privmsg(hostmask, channel, conv_event.text)
-#                elif sender == client.nickname:
-#                    client.privmsg(hostmask, channel, message)
-                else:
-                    if self.ascii_smileys:
-                        message = util.smileys_to_ascii(message)
-                    if message[:4] == '/me ':
-                        client.action(hostmask, channel, message[4:])
-                    else:
-                        client.privmsg(hostmask, channel, message)
+            self.slack.hangoutsMessage(channel, user, message)
 
     # Client Callbacks
 
@@ -94,32 +82,5 @@ class Server:
         self.clients[task].writer.close()
         del self.clients[task]
         logger.info("End Connection")
-
-    @asyncio.coroutine
-    def _handle_client(self, client):
-        username = None
-        welcomed = False
-
-        while True:
-            line = yield from client.readline()
-
-
-            if not line:
-                logger.info("Connection lost")
-                break
-
-            line = line.decode('utf-8','ignore').strip('\r\n')
-            logger.info('Received: %r', line.encode('utf-8'))
-
-            client.dataReceived(line)
-
-            if not welcomed and client.nickname and client.username:
-                welcomed = True
-                client.nick(client.nickname, util.get_nick(self._user_list._self_user))
-                client.nickname = util.get_nick(self._user_list._self_user)
-                client.welcome()
-
-            continue
-
 
 

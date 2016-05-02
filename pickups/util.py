@@ -22,7 +22,7 @@ def conversation_to_channel(conv):
     # only keep alpha nums
     name = re.sub(r'[^0-9a-zA-Z_]+', '', name)
 
-    name = "#{}".format(name[:49])
+    name = "{}".format(name[:21])
 
     if name in hashes and hashes[name] != conv_hash:
         while name in hashes:
