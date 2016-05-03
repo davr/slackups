@@ -8,6 +8,7 @@ import urllib.request
 import hashlib
 import json
 import appdirs
+import hangups
 from time import time
 
 from slackclient import SlackClient
@@ -160,6 +161,30 @@ class SlackGateway:
         self.addGroup({'id':channelID, 'name':cname, 'topic':{'value':util.get_topic(conv)}, 'purpose':{'value':purpose}})
 
         return channelID
+
+    @asyncio.coroutine
+    def onHangoutsRename(self, conv, old_name, new_name):
+        channelID = yield from self.convToChan(conv)
+        if channelID is None:
+            return
+
+        group = self.groups[channelID]
+
+        ctopic = util.get_topic(conv)
+        cname = util.conversation_to_channel(conv)
+
+        if group['name'] != cname:
+            res = self.client.api_call('groups.rename', channel=channelID, name=cname)
+            yield from asyncio.sleep(TICK)
+            if 'ok' in res and res['ok']:
+                group['name'] = res['channel']['name']
+
+        if group['topic']['value'] != ctopic:
+            res = self.client.api_call('groups.setTopic', channel=channelID, topic=ctopic)
+            yield from asyncio.sleep(TICK)
+            if 'ok' in res and res['ok']:
+                group['topic']['value'] = res['topic']
+
 
     @asyncio.coroutine
     def hangoutsMessage(self, conv, user, message):

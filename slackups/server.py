@@ -46,16 +46,20 @@ class Server:
         for conv in self._conv_list.get_all():
             util.conversation_to_channel(conv)
 
+        self.slack._conv_list = self._conv_list
+        self.slack._user_list = self._user_list
+
         self._conv_list.on_event.add_observer(self._on_hangups_event)
         logger.info('Hangups connected.')
 
-        task = asyncio.Task(self.slack.run())
+        asyncio.async(self.slack.run())
 
 
     @asyncio.coroutine
     def _on_hangups_event(self, conv_event):
         """Called when a hangups conversation event occurs."""
         try:
+            logger.info("Hangups Event: "+conv_event.__class__.__name__)
             if isinstance(conv_event, hangups.ChatMessageEvent):
                 conv = self._conv_list.get(conv_event.conversation_id)
                 user = conv.get_user(conv_event.user_id)
@@ -65,8 +69,10 @@ class Server:
                 message = conv_event.text
                 print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
                 yield from self.slack.hangoutsMessage(conv, user, message)
-            else:
-                logger.info("Hangups Event: "+conv_event.__class__.__name__)
+            elif isinstance(conv_event, hangups.RenameEvent):
+                conv = self._conv_list.get(conv_event.conversation_id)
+                yield from self.slack.onHangoutsRename(conv, conv_event.old_name, conv_event.new_name)
+
         except:
             logger.warning("Error handling hangouts event!")
 
