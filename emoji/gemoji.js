@@ -43,7 +43,8 @@
   "☺️": {
     "description": "white smiling face",
     "names": [
-      "relaxed"
+      "relaxed",
+      "simple_smile"
     ],
     "tags": [
       "blush",

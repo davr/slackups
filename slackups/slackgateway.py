@@ -1,4 +1,5 @@
 from . import util
+from . import emoji
 import asyncio
 import logging
 import os.path
@@ -20,6 +21,7 @@ class SlackGateway:
         self.IMGDIR = "/home/hangups/icons"
         self.IMGURL = "http://davr.org/slackicons"
         self.SLACK_TOKEN_URL = 'https://api.slack.com/docs/oauth-test-tokens#test_token_generator'
+        self.sent_messages = {}
 
         self.loadConfig()
 
@@ -83,12 +85,40 @@ class SlackGateway:
                     if not 'subtype' in event:
                         # reply_to is a response from server telling us they got the msg, ignore it
                         if not 'reply_to' in event:
-                           logger.info("Send msg")
+                           self.slackMessage(event['channel'], event['user'], event['text'])
+                           if 'attachments' in event:
+                               for attachment in event['attachments']:
+                                   self.slackMessage(event['channel'], event['user'], attachment['fallback'])
 
             yield from asyncio.sleep(TICK)
 
+    def slackMessage(self, channel, user, text):
+        if user != "U03NV5HLH":
+            logger.info("Ignoring unk dude")
+            return
+
+        conv = self.chanToConv(channel)
+        logger.info(text.encode('utf-8'))
+        msg = emoji.shortcode_to_emoji(text)
+        logger.info(msg.encode('utf-8'))
+        self.sent_messages[channel+msg] = True
+        segments = hangups.ChatMessageSegment.from_str(msg)
+        asyncio.async(conv.send_message(segments))
+
     def convHash(self, conv):
         return hashlib.sha1(conv.id_.encode()).hexdigest()
+
+    def chanToConv(self, channel):
+        if channel not in self.groups:
+            logger.warning("Unknown channel "+channel)
+        
+        group = self.groups[channel]
+        purpose = group['purpose']['value']
+        if purpose[0:17] == 'Hangouts Bridge: ':
+            hangoutid = purpose[17:]
+
+        return {hashlib.sha1(conv.id_.encode()).hexdigest(): conv
+                for conv in self._conv_list.get_all()}[hangoutid]
 
     @asyncio.coroutine
     def convToChan(self, conv):
@@ -127,7 +157,7 @@ class SlackGateway:
         res = self.client.api_call('groups.invite', channel=channelID, user="U03NV5HLH")
         yield from asyncio.sleep(TICK)
 
-        self.addGroup({'id':channelID, 'purpose':{'value':purpose}})
+        self.addGroup({'id':channelID, 'name':cname, 'topic':{'value':util.get_topic(conv)}, 'purpose':{'value':purpose}})
 
         return channelID
 
@@ -136,6 +166,11 @@ class SlackGateway:
         channelID = yield from self.convToChan(conv)
 
         if channelID is None:
+            return
+
+        if (channelID+message) in self.sent_messages:
+            del self.sent_messages[channelID+message]
+            logger.warning("Ignoring self message")
             return
 
         if user is None:
@@ -157,6 +192,7 @@ class SlackGateway:
                 logger.info("Dest: "+imgfile)
                 logger.info("Local URL: "+imgurl)
                 urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                yield from asyncio.sleep(TICK)
 
         self.client.api_call('chat.postMessage',
                 channel=channelID,
