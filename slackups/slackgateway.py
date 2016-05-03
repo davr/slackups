@@ -187,6 +187,14 @@ class SlackGateway:
 
 
     @asyncio.coroutine
+    def onHangoutsJoin(self, conv, users):
+        yield
+
+    @asyncio.coroutine
+    def onHangoutsLeave(self, conv, users):
+        yield
+
+    @asyncio.coroutine
     def hangoutsMessage(self, conv, user, message):
         channelID = yield from self.convToChan(conv)
 
