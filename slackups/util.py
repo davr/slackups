@@ -5,6 +5,7 @@ import hashlib
 import re
 import string
 import unicodedata
+from . import emoji
 
 CONV_HASH_LEN = 7
 
@@ -21,6 +22,10 @@ def conversation_to_channel(conv):
 
     # only keep alpha nums
     name = re.sub(r'[^0-9a-zA-Z_]+', '', name)
+
+    if name == "":
+        name = emoji.emoji_to_shortcode(get_conv_name(conv))
+        name = re.sub(r'[^0-9a-zA-Z_]+', '', name)
 
     name = "{}".format(name[:21])
 
