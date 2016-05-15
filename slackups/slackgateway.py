@@ -77,6 +77,13 @@ class SlackGateway:
             logger.critical(json.dumps(res).encode("utf-8"))
 
         yield from asyncio.sleep(TICK)
+
+        logger.info("Setting bot away")
+        res=self.client.api_call('users.setPresence', presence='away')
+        logger.info(json.dumps(res).encode('utf-8'))
+        yield from asyncio.sleep(TICK)
+
+
         while True:
             for event in self.client.rtm_read():
                 et = event['type']
