@@ -231,7 +231,11 @@ class SlackGateway:
                 logger.info("URL: "+user.photo_url)
                 logger.info("Dest: "+imgfile)
                 logger.info("Local URL: "+imgurl)
-                urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                try:
+                    urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                except:
+                    logger.warning("Unable to download profile pic")
+
                 yield from asyncio.sleep(TICK)
 
         self.client.api_call('chat.postMessage',
