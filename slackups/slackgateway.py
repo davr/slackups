@@ -127,10 +127,13 @@ class SlackGateway:
 
         conv = self.chanToConv(channel)
         logger.info(text.encode('utf-8'))
-        msg = emoji.shortcode_to_emoji(text)
-        logger.info(msg.encode('utf-8'))
-        self.sent_messages[channel+msg] = True
-        segments = hangups.ChatMessageSegment.from_str(msg)
+        text = emoji.shortcode_to_emoji(text)
+        text = re.sub(r'<([^|>]*)\|([^>]*)>', r'\2 - \1', text)
+        text = re.sub(r'<([^|>]*)>', r'\1', text)
+        text = text.replace('&lt;','<').replace('&gt;','>').replace('&amp;','&')
+        logger.info(text.encode('utf-8'))
+        self.sent_messages[channel+text] = True
+        segments = hangups.ChatMessageSegment.from_str(text)
         asyncio.async(conv.send_message(segments))
 
     def convHash(self, conv):
