@@ -68,6 +68,9 @@ class Server:
                 channel = util.conversation_to_channel(conv)
                 message = conv_event.text
                 print((hostmask+' -> '+channel+' : '+conv_event.text).encode('utf-8'))
+                if len(conv.users) < 3 and re.match('[0-9_-]',channel):
+                    print("[SKIPPING SMS]")
+                    return
                 yield from self.slack.hangoutsMessage(conv, user, message)
             elif isinstance(conv_event, hangups.RenameEvent):
                 conv = self._conv_list.get(conv_event.conversation_id)
