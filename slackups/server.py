@@ -56,7 +56,7 @@ class Server:
 
 
     @asyncio.coroutine
-    def _on_hangups_event(self, conv_event):
+    def _on_hangups_event(self, conv_event, retry=0):
         """Called when a hangups conversation event occurs."""
         try:
             logger.info("Hangups Event: "+conv_event.__class__.__name__)
@@ -83,7 +83,13 @@ class Server:
                     logger.warning("Unknown membership change type: "+str(conv_event.type))
 
         except:
-            logger.warning("Error handling hangouts event!")
+            logger.exception("Error handling hangouts event!")
+            if retry < 5:
+                yield from asyncio.sleep(retry+0.1)
+                logger.info("RETRYING")
+                yield from self._on_hangups_event(conv_event, retry+1)
+            else:
+                logger.critical("##########GAVE UP RETRYING############")
 
 
     # Client Callbacks
