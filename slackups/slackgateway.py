@@ -3,12 +3,15 @@ from . import emoji
 import asyncio
 import logging
 import os.path
+import re
 import os
 import urllib.request
 import hashlib
 import json
 import appdirs
 import hangups
+import hangups.auth
+import requests
 from time import time
 
 from slackclient import SlackClient
@@ -23,6 +26,7 @@ class SlackGateway:
         self.IMGURL = "http://davr.org/slackicons"
         self.SLACK_TOKEN_URL = 'https://api.slack.com/docs/oauth-test-tokens#test_token_generator'
         self.sent_messages = {}
+        self.connected = False
 
         self.loadConfig()
 
@@ -50,8 +54,10 @@ class SlackGateway:
         self.client = SlackClient(self.token)
         if self.client.rtm_connect():
             logger.info("Connected to Slack!")
+            self.connected = True
         else:
             logger.critical("ERROR CONNCTING TO SLACK check token?")
+            self.connected = False
 
     def addGroup(self, group):
         self.groups[group['id']] = group
@@ -83,20 +89,33 @@ class SlackGateway:
         logger.info(json.dumps(res).encode('utf-8'))
         yield from asyncio.sleep(TICK)
 
+        retry = 0
 
         while True:
-            for event in self.client.rtm_read():
-                et = event['type']
-                logger.info(json.dumps(event).encode('utf-8'))
-                if et == 'message':
-                    # normal messages have no subtype
-                    if not 'subtype' in event:
-                        # reply_to is a response from server telling us they got the msg, ignore it
-                        if not 'reply_to' in event:
-                           self.slackMessage(event['channel'], event['user'], event['text'])
-                           if 'attachments' in event:
-                               for attachment in event['attachments']:
-                                   self.slackMessage(event['channel'], event['user'], attachment['fallback'])
+            if self.connected:
+                retry = 0
+                try:
+                    for event in self.client.rtm_read():
+                        et = event['type']
+                        logger.info(json.dumps(event).encode('utf-8'))
+                        if et == 'message':
+                            # normal messages have no subtype
+                            if not 'subtype' in event:
+                                # reply_to is a response from server telling us they got the msg, ignore it
+                                if not 'reply_to' in event:
+                                   self.slackMessage(event['channel'], event['user'], event['text'])
+                                   if 'attachments' in event:
+                                       for attachment in event['attachments']:
+                                           self.slackMessage(event['channel'], event['user'], attachment['fallback'])
+                except:
+                    logger.exception("ERROR HANDLING SLACK EVENT")
+                    self.connected = False
+            else:
+                self.connect()
+                if not self.connected:
+                    retry += 1
+                    yield from asyncio.sleep(retry)
+
 
             yield from asyncio.sleep(TICK)
 
