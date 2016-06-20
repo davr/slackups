@@ -26,6 +26,7 @@ class SlackGateway:
         self.IMGURL = "http://davr.org/slackicons"
         self.SLACK_TOKEN_URL = 'https://api.slack.com/docs/oauth-test-tokens#test_token_generator'
         self.sent_messages = {}
+        self.renamegroups = False
         self.connected = False
 
         self.loadConfig()
@@ -199,7 +200,7 @@ class SlackGateway:
         ctopic = util.get_topic(conv)
         cname = util.conversation_to_channel(conv)
 
-        if group['name'] != cname:
+        if self.renamegroups and group['name'] != cname:
             res = self.client.api_call('groups.rename', channel=channelID, name=cname)
             yield from asyncio.sleep(TICK)
             if 'ok' in res and res['ok']:
