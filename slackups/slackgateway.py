@@ -242,7 +242,7 @@ class SlackGateway:
 
         nick = util.get_nick(user)
         if user.photo_url is None:
-            imgurl = self.IMGUR + "/default.jpg"
+            imgurl = self.IMGURL + "/default.jpg"
         else:
             img = hashlib.md5(user.photo_url.encode()).hexdigest()
 
@@ -255,9 +255,18 @@ class SlackGateway:
                 logger.info("Dest: "+imgfile)
                 logger.info("Local URL: "+imgurl)
                 try:
-                    urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                    cooks = json.loads(open("/tmp/cookies.json",'r').read())
+                    resp = requests.get("http:"+user.photo_url, cookies=cooks)
+                    with open(imgfile,'wb') as f:
+                        for chunk in resp.iter_content(1024):
+                            f.write(chunk)
+                    resp.close()
                 except:
-                    logger.warning("Unable to download profile pic")
+                    logger.exception("Error downloading profile pic with session, falling back to simple")
+                    try:
+                        urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                    except:
+                        logger.exception("Unable to download profile pic")
 
                 yield from asyncio.sleep(TICK)
 
