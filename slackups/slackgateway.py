@@ -22,8 +22,16 @@ TICK = 0.01
 class SlackGateway:
 
     def __init__(self):
+
+        ## where to save profile pics locally
         self.IMGDIR = "/home/hangups/icons"
+
+        ## url the profile pics are accessible under
         self.IMGURL = "http://davr.org/slackicons"
+
+        ## your slack user id
+        self.SLACK_USER_ID = "U03NV5HLH"
+
         self.SLACK_TOKEN_URL = 'https://api.slack.com/docs/oauth-test-tokens#test_token_generator'
         self.sent_messages = {}
         self.renamegroups = False
@@ -121,7 +129,7 @@ class SlackGateway:
             yield from asyncio.sleep(TICK)
 
     def slackMessage(self, channel, user, text):
-        if user != "U03NV5HLH":
+        if user != self.SLACK_USER_ID:
             logger.info("Ignoring unk dude")
             return
 
@@ -185,7 +193,7 @@ class SlackGateway:
             logger.critical("ERROR SETTING TOPIC")
             logger.critical(json.dumps(res).encode("utf-8"))
 
-        res = self.client.api_call('groups.invite', channel=channelID, user="U03NV5HLH")
+        res = self.client.api_call('groups.invite', channel=channelID, user=self.SLACK_USER_ID)
         yield from asyncio.sleep(TICK)
 
         self.addGroup({'id':channelID, 'name':cname, 'topic':{'value':util.get_topic(conv)}, 'purpose':{'value':purpose}})
