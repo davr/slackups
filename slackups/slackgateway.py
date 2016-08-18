@@ -224,6 +224,38 @@ class SlackGateway:
     def onHangoutsLeave(self, conv, users):
         yield
 
+    def getProfilePic(self, user):
+        if user.photo_url is None:
+            imgurl = self.IMGURL + "/default.jpg"
+        else:
+            img = hashlib.md5(user.photo_url.encode()).hexdigest()
+
+            imgurl = self.IMGURL + "/" + img + ".jpg"
+
+            imgfile = self.IMGDIR + "/" + img + ".jpg"
+            if not os.path.isfile(imgfile):
+                logger.info(("Downloading profile photo for "+util.get_nick(user)).encode('utf-8'))
+                logger.info("URL: "+user.photo_url)
+                logger.info("Dest: "+imgfile)
+                logger.info("Local URL: "+imgurl)
+                try:
+                    cooks = json.loads(open("/tmp/cookies.json",'r').read())
+                    resp = requests.get("http:"+user.photo_url, cookies=cooks)
+                    with open(imgfile,'wb') as f:
+                        for chunk in resp.iter_content(1024):
+                            f.write(chunk)
+                    resp.close()
+                except:
+                    logger.exception("Error downloading profile pic with session, falling back to simple")
+                    try:
+                        urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
+                    except:
+                        logger.exception("Unable to download profile pic")
+                        imgurl = self.imgurl + "/default.jpg"
+
+        return imgurl
+
+
     @asyncio.coroutine
     def hangoutsMessage(self, conv, user, message):
         channelID = yield from self.convToChan(conv)
@@ -241,34 +273,8 @@ class SlackGateway:
             return
 
         nick = util.get_nick(user)
-        if user.photo_url is None:
-            imgurl = self.IMGURL + "/default.jpg"
-        else:
-            img = hashlib.md5(user.photo_url.encode()).hexdigest()
-
-            imgurl = self.IMGURL + "/" + img + ".jpg"
-
-            imgfile = self.IMGDIR + "/" + img + ".jpg"
-            if not os.path.isfile(imgfile):
-                logger.info(("Downloading profile photo for "+nick).encode('utf-8'))
-                logger.info("URL: "+user.photo_url)
-                logger.info("Dest: "+imgfile)
-                logger.info("Local URL: "+imgurl)
-                try:
-                    cooks = json.loads(open("/tmp/cookies.json",'r').read())
-                    resp = requests.get("http:"+user.photo_url, cookies=cooks)
-                    with open(imgfile,'wb') as f:
-                        for chunk in resp.iter_content(1024):
-                            f.write(chunk)
-                    resp.close()
-                except:
-                    logger.exception("Error downloading profile pic with session, falling back to simple")
-                    try:
-                        urllib.request.urlretrieve("http:"+user.photo_url, imgfile)
-                    except:
-                        logger.exception("Unable to download profile pic")
-
-                yield from asyncio.sleep(TICK)
+        imgurl = self.getProfilePic(user)
+        yield from asyncio.sleep(TICK)
 
         self.client.api_call('chat.postMessage',
                 channel=channelID,
