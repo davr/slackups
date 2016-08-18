@@ -225,7 +225,7 @@ class SlackGateway:
         yield
 
     def getProfilePic(self, user):
-        if user.photo_url is None:
+        if user.photo_url is None or user.photo_url == "" or len(user.photo_url) < 5:
             imgurl = self.IMGURL + "/default.jpg"
         else:
             img = hashlib.md5(user.photo_url.encode()).hexdigest()
