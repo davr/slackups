@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 
 import hangups
 import hangups.auth
@@ -75,15 +76,23 @@ class Server:
             elif isinstance(conv_event, hangups.RenameEvent):
                 conv = self._conv_list.get(conv_event.conversation_id)
                 yield from self.slack.onHangoutsRename(conv, conv_event.old_name, conv_event.new_name)
-            elif isinstance(conv_event, hangups.MembershipChangeEvent):
-                conv = self._conv_list.get(conv_event.conversation_id)
-                users = [conv.get_user(uid) for uid in conv_event.participant_ids]
-                if conv_event.type == MEMBERSHIP_CHANGE_TYPE_JOIN:
-                    yield from self.slack.onHangoutsJoin(conv, users)
-                elif conv_event.type == MEMBERSHIP_CHANGE_TYPE_LEAVE:
-                    yield from self.slack.onHangoutsLeave(conv, users)
-                else:
-                    logger.warning("Unknown membership change type: "+str(conv_event.type))
+#            elif isinstance(conv_event, hangups.MembershipChangeEvent):
+#                conv = self._conv_list.get(conv_event.conversation_id)
+#                users = [conv.get_user(uid) for uid in conv_event.participant_ids]
+#                if conv_event.type == MEMBERSHIP_CHANGE_TYPE_JOIN:
+#                    yield from self.slack.onHangoutsJoin(conv, users)
+#                elif conv_event.type == MEMBERSHIP_CHANGE_TYPE_LEAVE:
+#                    yield from self.slack.onHangoutsLeave(conv, users)
+#                else:
+#                    logger.warning("Unknown membership change type: "+str(conv_event.type))
+#            elif isinstance(conv_event, hangups.HangoutEvent):
+#                conv = self._conv_list.get(conv_event.conversation_id)
+#                if conv_event.type == HANGOUT_EVENT_TYPE_START:
+#                    logger.info(">>>>Call Start<<<<")
+#                elif conv_event.type == HANGOUT_EVENT_TYPE_END:
+#                    logger.info(">>>>Call End<<<<")
+#                else:
+#                    logger.warning("Unknown hangout call event type: "+str(conv_event.type))
 
         except:
             logger.exception("Error handling hangouts event!")
