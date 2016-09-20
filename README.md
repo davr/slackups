@@ -1,4 +1,4 @@
-# pickups
+# slackups
 
 Slack gateway for Google Hangouts using
 [hangups](https://github.com/tdryer/hangups).
