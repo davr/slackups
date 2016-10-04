@@ -5,6 +5,8 @@ Slack gateway for Google Hangouts using
 
 ## Usage
 
+First you must put your slack user ID into slackups/slackgateway.py -- soon I will make this automatic.
+
 `$ python3 run.py`
 
 You will be given a URL to your oauth2 token.  Go to the url.  Copy the token.
