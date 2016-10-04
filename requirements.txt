@@ -2,7 +2,7 @@ aiohttp==0.17.3
 appdirs==1.4.0
 chardet==2.3.0
 ConfigArgParse==0.9.3
-hangups==0.3.5
+hangups==0.4.1
 protobuf==3.0.0a3
 readlike==0.1.2
 ReParser==1.4.3
